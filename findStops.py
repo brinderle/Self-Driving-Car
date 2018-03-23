@@ -47,14 +47,8 @@ for i in range(len(Data1Subset)):
     minDirection = 0
     maxDirection = 0
 
-    # prevAccelY is idea to further check if it is a stop by checking if deceleration was occuring an amount of
-    # time before the stop, not implemented right now
-    # if i > 100:
-    #     prevAccelY = Data1Subset.iloc[i-100,6]
-    # else:
-    #     prevAccelY = 0
 
-    # check if speed is less than 1.5 m/s (3.36 mph) and then something about accelerationY
+    # check if speed is less than 3 m/s and then something about accelerationY
     # also need to allow for one latitude with multiple longitudes, which is why values for dictionary keys are lists
     if speed < 3 and accelY > .1 and latitude not in stops:
         stops[str(latitude)] = [longitude]
@@ -67,21 +61,14 @@ for i in range(len(Data1Subset)):
             if minDirection < 0:
                 minDirection += 360
         # appending minDirection and maxDirection to account for minor changes in direction
-        stopCoordinateList.append([latitude,longitude, minDirection, maxDirection])
+        stopCoordinateList.append([latitude,longitude, direction, minDirection, maxDirection])
     elif speed < 3 and accelY > .1 and latitude in stops:
         stops[str(latitude)] = stops[str(latitude)].append(longitude)
         if i > 20:
             direction = angle_between([latitude, longitude], [Data1Subset.iloc[i - 20, 1], Data1Subset.iloc[i - 20, 2]])
-        stopCoordinateList.append([latitude, longitude, minDirection, maxDirection])
+        stopCoordinateList.append([latitude, longitude, direction, minDirection, maxDirection])
 
 
-# commented this section out when adding stopCoordinateList append above while adding direction
-# for i in stops:
-#     # this inner loop goes through each item in the list, which is the dictionary value
-#     # this allows for one latitude with multiple longitudes to be treated properly
-#     for j in range(len(stops[i])):
-#         stopCoordinateList.append([i,stops[i][j]])
-#         #print(i, ", ", stops[i][j], sep="")
 
 # Calculate the distance between two points, and if the second stop is within a certain distance of the first
 # stop, delete the first stop from the list of stops, should eliminate some of the overlapping stops
@@ -93,8 +80,25 @@ for i in range(len(stopCoordinateList) - 1):
     # I did some calculations between points and .00003 looked to be a reasonable cutoff
     p0Coordinates = [stopCoordinateList[i][0], stopCoordinateList[i][1]]
     p1Coordinates = [stopCoordinateList[i+1][0], stopCoordinateList[i+1][1]]
-    # if (distance(stopCoordinateList[i], stopCoordinateList[i+1]) < .00005):
-    if (distance(p0Coordinates, p1Coordinates) < .00005):
+    p0Direction = stopCoordinateList[i][2]
+    p1Direction = stopCoordinateList[i+1][2]
+    directionDifference = 0
+
+    # set directionDifference appropriately based on which is greater, if close to 0 or 360
+    if p1Direction > p0Direction and p1Direction > 315 and p0Direction < 45:
+        directionDifference = p0Direction + 360 - p1Direction
+    elif p0Direction > p1Direction and p0Direction > 315 and p1Direction < 45:
+        directionDifference = p1Direction + 360 - p0Direction
+    elif p1Direction > p0Direction:
+        directionDifference = p1Direction - p0Direction
+    else: # p0Direction > p1Direction
+        directionDifference = p0Direction - p1Direction
+
+    # only say they are too close or bad coordinates if they are within this distance and the car was
+    # going the same direction, don't want to eliminate points that are close but going different
+    # directions like going through different parts of an intersection
+    # giving some room for error of 45 degrees in the directionDifference
+    if (distance(p0Coordinates, p1Coordinates) < .00005 and directionDifference < 45):
         tooClose.append(i)
 
 tooCloseLength = len(tooClose)
@@ -104,5 +108,6 @@ for i in range(tooCloseLength):
     del stopCoordinateList[tooClose[i] - i]
 
 # print the information for the remaining stops after deleting the duplicates that were too close
+# only printing the coordinates and direction right now, not min or max direction but they are there
 for i in range(len(stopCoordinateList)):
-    print(stopCoordinateList[i][0], ", ", stopCoordinateList[i][1], ",", stopCoordinateList[i][2], ",", stopCoordinateList[i][3], sep="")
+    print(stopCoordinateList[i][0], ", ", stopCoordinateList[i][1], ",", stopCoordinateList[i][2], sep="")
