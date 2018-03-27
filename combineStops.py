@@ -110,7 +110,9 @@ for dataSet in Data:
         # going the same direction, don't want to eliminate points that are close but going different
         # directions like going through different parts of an intersection
         # giving some room for error of 45 degrees in the directionDifference
-        if (distance(p0Coordinates, p1Coordinates) < .00005 and directionDifference < 45):
+        if (distance(p0Coordinates, p1Coordinates) < .0002 and directionDifference < 45):
+            tooClose.append(i)
+        elif (distance(p0Coordinates, p1Coordinates) < .0001):
             tooClose.append(i)
 
     tooCloseLength = len(tooClose)
