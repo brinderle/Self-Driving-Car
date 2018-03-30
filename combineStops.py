@@ -42,8 +42,8 @@ stops = collections.OrderedDict()
 stopCoordinateList = []
 
 for dataSet in Data:
-
-    DataSubset = dataSet.iloc[:,[1,5,6,7,8,21,22]]
+    #take out the first and last 20 seconds from each data set, subset the columns
+    DataSubset = dataSet.iloc[320:len(dataSet)-320,[1,5,6,7,8,21,22]]
     # maybe add rotation column
     DataSubset.columns = ["sampleNum", "latitude", "longitude", "altitude", "speed", "accelerationX", "accelerationY"]
 
@@ -62,7 +62,7 @@ for dataSet in Data:
 
         # check if speed is less than 3 m/s and then something about accelerationY
         # also need to allow for one latitude with multiple longitudes, which is why values for dictionary keys are lists
-        if speed < 3 and accelY > .1 and latitude not in stops:
+        if speed < 2 and accelY > .1 and latitude not in stops:
             stops[str(latitude)] = [longitude]
             if i > 20:
                 direction = angle_between([latitude, longitude], [DataSubset.iloc[i - 20, 1], DataSubset.iloc[i - 20, 2]])
