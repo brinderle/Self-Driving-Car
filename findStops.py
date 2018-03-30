@@ -25,7 +25,8 @@ Data1 = pd.read_csv("C:/Users/student/Documents/Brandon/Self-Driving Project/Dat
 # normal laptop path
 #Data1 = pd.read_csv("C:/Users/student/Documents/CS4630/Self-Driving Project/Data02-25_14-01.csv")
 
-Data1Subset = Data1.iloc[:,[1,5,6,7,8,21,22]]
+#take out the first and last 20 seconds from the data set, subset the columns
+Data1Subset = Data1.iloc[320:len(Data1)-320,[1,5,6,7,8,21,22]]
 # maybe add rotation column
 Data1Subset.columns = ["sampleNum", "latitude", "longitude", "altitude", "speed", "accelerationX", "accelerationY"]
 
@@ -50,7 +51,7 @@ for i in range(len(Data1Subset)):
 
     # check if speed is less than 3 m/s and then something about accelerationY
     # also need to allow for one latitude with multiple longitudes, which is why values for dictionary keys are lists
-    if speed < 3 and accelY > .1 and latitude not in stops:
+    if speed < 2 and accelY > .1 and latitude not in stops:
         stops[str(latitude)] = [longitude]
         if i > 20:
             direction = angle_between([latitude, longitude], [Data1Subset.iloc[i - 20, 1], Data1Subset.iloc[i - 20, 2]])
@@ -111,3 +112,4 @@ for i in range(tooCloseLength):
 # only printing the coordinates and direction right now, not min or max direction but they are there
 for i in range(len(stopCoordinateList)):
     print(stopCoordinateList[i][0], ", ", stopCoordinateList[i][1], ",", stopCoordinateList[i][2], sep="")
+
