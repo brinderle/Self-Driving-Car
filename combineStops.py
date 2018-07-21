@@ -49,7 +49,6 @@ for dataSet in Data:
 
 
     # the data points I get back from the low speed and positive acceleration seem good other than parking lots
-    # reason for positive acceleration to identify is you have to speed back up after a stop
     for i in range(len(DataSubset)):
         speed = DataSubset.iloc[i,4]
         latitude = DataSubset.iloc[i,1]
@@ -60,7 +59,7 @@ for dataSet in Data:
         maxDirection = 0
 
 
-        # check if speed is less than 3 m/s and then something about accelerationY
+        # check if speed is less than 2 m/s and then something about accelerationY
         # also need to allow for one latitude with multiple longitudes, which is why values for dictionary keys are lists
         if speed < 2 and accelY > .1 and latitude not in stops:
             stops[str(latitude)] = [longitude]
@@ -74,7 +73,7 @@ for dataSet in Data:
                     minDirection += 360
             # appending minDirection and maxDirection to account for minor changes in direction
             stopCoordinateList.append([latitude,longitude, direction, minDirection, maxDirection])
-        elif speed < 3 and accelY > .1 and latitude in stops:
+        elif speed < 2 and accelY > .1 and latitude in stops:
             stops[str(latitude)] = stops[str(latitude)].append(longitude)
             if i > 20:
                 direction = angle_between([latitude, longitude], [DataSubset.iloc[i - 20, 1], DataSubset.iloc[i - 20, 2]])
@@ -89,7 +88,6 @@ for dataSet in Data:
 
     tooClose = [] # will store the indices of stopCoordinateList where the stops are too close together
     for i in range(len(stopCoordinateList) - 1):
-        # I did some calculations between points and .00003 looked to be a reasonable cutoff
         p0Coordinates = [stopCoordinateList[i][0], stopCoordinateList[i][1]]
         p1Coordinates = [stopCoordinateList[i+1][0], stopCoordinateList[i+1][1]]
         p0Direction = stopCoordinateList[i][2]
